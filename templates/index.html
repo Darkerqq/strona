@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Checklista Zadań</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body
+    data-selected-date="{{ selected_date }}"
+    data-today-date="{{ today_date }}"
+    data-once-task-days='{{ once_task_days | tojson }}'
+    data-week-days='{{ week_days | tojson }}'>
+
+<div class="app-container">
+    <!-- Wykres tygodniowy u góry -->
+    <div class="weekly-chart-container">
+        <div class="weekly-chart-title">Postęp w bieżącym tygodniu (% wykonanych zadań)</div>
+        <svg class="line-chart-svg" viewBox="0 0 1000 220" id="weekly-line-chart">
+            <defs>
+                <linearGradient id="grad-high" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.45"/>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                </linearGradient>
+                <linearGradient id="grad-mid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45"/>
+                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0"/>
+                </linearGradient>
+                <linearGradient id="grad-low" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ef4444" stop-opacity="0.45"/>
+                    <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+                </linearGradient>
+                
+                <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ef4444" />
+                    <stop offset="50%" stop-color="#f59e0b" />
+                    <stop offset="100%" stop-color="#10b981" />
+                </linearGradient>
+            </defs>
+            
+            <line x1="40" y1="30" x2="960" y2="30" stroke="#22273d" stroke-dasharray="6,6" stroke-width="1" />
+            <line x1="40" y1="102.5" x2="960" y2="102.5" stroke="#22273d" stroke-dasharray="6,6" stroke-width="1" />
+            <line x1="40" y1="175" x2="960" y2="175" stroke="#22273d" stroke-dasharray="6,6" stroke-width="1" />
+            
+            <g id="chart-content"></g>
+        </svg>
+    </div>
+
+    <div class="layout">
+        <div class="sidebar">
+            <!-- Kalendarz -->
+            <div class="sidebar-card">
+                <h2>Kalendarz</h2>
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">&lt;</button>
+                    <button class="btn-today-cal" onclick="goToToday()">Dzisiaj</button>
+                    <span id="calendar-month-year" style="font-weight: bold;"></span>
+                    <button onclick="changeMonth(1)">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
+            <!-- Statystyki -->
+            <div class="sidebar-card">
+                <h2>Statystyki</h2>
+                <div class="stat-item">
+                    <span>Skuteczność (miesiąc):</span>
+                    <span class="stat-value">{{ stats.month_percentage }}%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Zrobione (miesiąc):</span>
+                    <span class="stat-value">{{ stats.month_done }}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Łącznie ukończone:</span>
+                    <span class="stat-value">{{ stats.all_time_done }}</span>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h2>Przypomnienia</h2>
+                <div id="reminder-list" class="reminder-list">
+                    <span style="color: #8b95a5; font-size: 0.85em;">Ładowanie...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Nawigacja po dacie -->
+            <div class="date-nav">
+                <a href="/?date={{ yesterday_date }}">&laquo; Wczoraj</a>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 1.2em; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ selected_date }}</span>
+                    {% if selected_date != today_date %}
+                    <a href="/?date={{ today_date }}" class="btn-today">Wróć do dzisiaj</a>
+                    {% endif %}
+                </div>
+                <a href="/?date={{ tomorrow_date }}">Jutro &raquo;</a>
+            </div>
+
+            <h2>Dodaj nowe zadanie</h2>
+            <form action="/add" method="POST" class="add-form">
+                <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                <div class="add-form-row">
+                    <input type="text" name="title" placeholder="Nazwa zadania..." required>
+                    <button type="submit">Dodaj zadanie</button>
+                </div>
+                <div>
+                    <textarea name="description" placeholder="Opis zadania (opcjonalnie)..."></textarea>
+                </div>
+                <div class="form-grid">
+                    <label class="form-field">Priorytet
+                        <select name="priority">
+                            <option value="low">Niski</option>
+                            <option value="normal" selected>Normalny</option>
+                            <option value="high">Wysoki</option>
+                        </select>
+                    </label>
+                    <label class="form-field">Kategoria
+                        <input type="text" name="category" placeholder="np. Praca">
+                    </label>
+                    <label class="form-field">Kolor
+                        <input type="color" name="color" value="#3b82f6">
+                    </label>
+                    <label class="form-field">Godzina
+                        <input type="time" name="due_time">
+                    </label>
+                    <label class="form-field">Termin
+                        <input type="date" name="deadline">
+                    </label>
+                    <label class="form-field">Przypomnienie
+                        <select name="reminder_minutes">
+                            <option value="5">5 min przed</option>
+                            <option value="15" selected>15 min przed</option>
+                            <option value="30">30 min przed</option>
+                            <option value="60">1 godz. przed</option>
+                        </select>
+                    </label>
+                    <label class="form-checkbox" style="align-self: end; padding-bottom: 9px;">
+                        <input type="checkbox" name="reminder_enabled" value="1">
+                        Włącz przypomnienie
+                    </label>
+                </div>
+                <div class="add-form-row" style="font-size: 0.9em; color: #aaa;">
+                    <label><input type="radio" name="type" value="daily" checked onclick="toggleDaysInput(false)"> Codzienne</label>
+                    <label><input type="radio" name="type" value="once" onclick="toggleDaysInput(false)"> Jednorazowe</label>
+                    <label><input type="radio" name="type" value="for_x_days" onclick="toggleDaysInput(true)"> Na X dni:</label>
+                    <input type="number" id="duration_days" name="duration_days" value="7" min="1" max="365" style="width: 60px; padding: 4px; display: none; background: #0d0f12; color: #fff; border: 1px solid #333a48; border-radius: 4px;">
+                </div>
+            </form>
+
+            <h2>Zadania na dziś</h2>
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-row">
+                    <div style="flex-grow: 1; width: 100%;">
+                        <div id="display-{{ task.id }}">
+                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                                <strong style="color: #fff; font-size: 1.05em;">{{ task.title }}</strong> 
+                                <small style="color: #888;">
+                                    {% if task.type == 'daily' %}(Codzienne)
+                                    {% elif task.type == 'once' %}(Jednorazowe)
+                                    {% elif task.type == 'for_x_days' %}(Na {{ task.duration_days }} dni)
+                                    {% endif %}
+                                </small>
+                                {% if task.streak > 0 %}
+                                <span class="streak-badge" title="Seria {{ task.streak }} dni z rzędu!">🔥 {{ task.streak }}d</span>
+                                {% endif %}
+                            </div>
+                            <div class="task-meta">
+                                {% if task.priority == 'high' %}<span class="meta-badge priority-high">Pilne</span>{% endif %}
+                                {% if task.priority == 'low' %}<span class="meta-badge priority-low">Niski priorytet</span>{% endif %}
+                                {% if task.category %}<span class="meta-badge">{{ task.category }}</span>{% endif %}
+                                {% if task.due_time %}<span class="meta-badge">🕒 {{ task.due_time }}</span>{% endif %}
+                                {% if task.deadline %}<span class="meta-badge">Termin: {{ task.deadline }}</span>{% endif %}
+                                {% if task.reminder_enabled %}<span class="meta-badge">🔔 {{ task.reminder_minutes }} min</span>{% endif %}
+                                <span class="task-color" style="background: {{ task.color or '#3b82f6' }};" title="Kolor zadania"></span>
+                            </div>
+                            {% if task.description %}
+                            <p class="task-description">{{ task.description }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Formularz edycji -->
+                        <div id="edit-form-{{ task.id }}" style="display:none; margin-top: 10px;">
+                            <form action="/edit_task/{{ task.id }}" method="POST" class="add-form" style="margin-bottom: 0; padding: 12px; background: #111317;">
+                                <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                                <div class="add-form-row">
+                                    <input type="text" name="title" value="{{ task.title }}" required>
+                                    <button type="submit" class="btn-success">Zapisz</button>
+                                    <button type="button" onclick="toggleEdit({{ task.id }})" class="btn-danger">Anuluj</button>
+                                </div>
+                                <div>
+                                    <textarea name="description">{{ task.description }}</textarea>
+                                </div>
+                                <div class="form-grid">
+                                    <label class="form-field">Priorytet
+                                        <select name="priority">
+                                            <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Niski</option>
+                                            <option value="normal" {% if task.priority == 'normal' or not task.priority %}selected{% endif %}>Normalny</option>
+                                            <option value="high" {% if task.priority == 'high' %}selected{% endif %}>Wysoki</option>
+                                        </select>
+                                    </label>
+                                    <label class="form-field">Kategoria
+                                        <input type="text" name="category" value="{{ task.category or '' }}">
+                                    </label>
+                                    <label class="form-field">Kolor
+                                        <input type="color" name="color" value="{{ task.color or '#3b82f6' }}">
+                                    </label>
+                                    <label class="form-field">Godzina
+                                        <input type="time" name="due_time" value="{{ task.due_time or '' }}">
+                                    </label>
+                                    <label class="form-field">Termin
+                                        <input type="date" name="deadline" value="{{ task.deadline or '' }}">
+                                    </label>
+                                    <label class="form-field">Przypomnienie
+                                        <select name="reminder_minutes">
+                                            <option value="5" {% if task.reminder_minutes == 5 %}selected{% endif %}>5 min przed</option>
+                                            <option value="15" {% if task.reminder_minutes == 15 or not task.reminder_minutes %}selected{% endif %}>15 min przed</option>
+                                            <option value="30" {% if task.reminder_minutes == 30 %}selected{% endif %}>30 min przed</option>
+                                            <option value="60" {% if task.reminder_minutes == 60 %}selected{% endif %}>1 godz. przed</option>
+                                        </select>
+                                    </label>
+                                    <label class="form-checkbox" style="align-self: end; padding-bottom: 9px;">
+                                        <input type="checkbox" name="reminder_enabled" value="1" {% if task.reminder_enabled %}checked{% endif %}>
+                                        Włącz przypomnienie
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;" id="actions-{{ task.id }}">
+                        <form action="/update_status" method="POST" style="margin: 0;">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <input type="hidden" name="task_id" value="{{ task.id }}">
+                            <div class="radio-group">
+                                <label class="status-pending">
+                                    <input type="radio" name="status" value="pending" 
+                                           {% if task.status == 'pending' %}checked{% endif %} 
+                                           onchange="this.form.submit()"> Brak
+                                </label>
+                                <label class="status-completed">
+                                    <input type="radio" name="status" value="completed" 
+                                           {% if task.status == 'completed' or task.status == 'done' %}checked{% endif %} 
+                                           onchange="this.form.submit()"> Tak
+                                </label>
+                                <label class="status-failed">
+                                    <input type="radio" name="status" value="failed" 
+                                           {% if task.status == 'failed' or task.status == 'not_done' %}checked{% endif %} 
+                                           onchange="this.form.submit()"> Nie
+                                </label>
+                            </div>
+                        </form>
+
+                        <button type="button" class="btn-warning" onclick="toggleEdit({{ task.id }})">Edytuj</button>
+
+                        {% if task.type == 'daily' %}
+                        <form action="/pause_task/{{ task.id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <button type="submit" class="btn-warning">Wstrzymaj</button>
+                        </form>
+                        {% endif %}
+
+                        <form action="/delete/{{ task.id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <button type="submit" class="btn-danger" onclick="return confirm('Usunąć zadanie całkowicie?')">Usuń</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #777; font-style: italic;">Brak aktywnych zadań przypisanych do tego dnia.</p>
+            {% endif %}
+
+            {% if paused_tasks %}
+            <div class="archive-section">
+                <h2 style="border-bottom-color: #522729; color: #f87171;">Wstrzymane zadania w tym dniu</h2>
+                {% for task in paused_tasks %}
+                <div class="task-row" style="margin-bottom: 6px;">
+                    <div style="flex-grow: 1;">
+                        <strong style="color: #fff;">{{ task.title }}</strong> 
+                        <small style="color: #ef4444;">(Wstrzymane od: {{ task.current_pause_start }})</small>
+                        {% if task.description %}
+                        <p class="task-description">{{ task.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <form action="/resume_task/{{ task.id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <button type="submit" class="btn-success">Wznów od dziś</button>
+                        </form>
+
+                        <form action="/delete/{{ task.id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <button type="submit" class="btn-danger" onclick="return confirm('Usunąć zadanie całkowicie?')">Usuń</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <section class="notes-section">
+                <h2>Notatki na {{ selected_date }}</h2>
+                <form action="/add_note" method="POST" class="add-form" style="margin-bottom: 15px; padding: 12px;">
+                    <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                    <div class="add-form-row">
+                        <input type="text" name="title" placeholder="Tytuł notatki (opcjonalnie)">
+                    </div>
+                    <textarea name="content" placeholder="Treść notatki..." required></textarea>
+                    <button type="submit">Dodaj notatkę</button>
+                </form>
+                {% if notes %}
+                    {% for note in notes %}
+                    <article class="note-item">
+                        <div class="note-header">
+                            <strong>{{ note.title or 'Notatka' }}</strong>
+                            <form action="/delete_note/{{ note.id }}" method="POST">
+                                <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                                <button type="submit" class="btn-danger" onclick="return confirm('Usunąć notatkę?')">Usuń</button>
+                            </form>
+                        </div>
+                        <p class="note-content">{{ note.content }}</p>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #8aa0ad; font-style: italic;">Brak notatek dla tego dnia.</p>
+                {% endif %}
+            </section>
+
+            <h2 style="margin-top: 30px;">Historia i Progres</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Zadanie</th>
+                        <th>Stan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day, records in history.items() %}
+                        {% for task_id, status in records.items() %}
+                            {% for task in all_tasks %}
+                                {% if task.id|string == task_id|string %}
+                                <tr>
+                                    <td>{{ day }}</td>
+                                    <td>{{ task.title }}</td>
+                                    <td class="status-{{ status }}">
+                                        {% if status == 'completed' or status == 'done' %}wykonane
+                                        {% elif status == 'failed' or status == 'not_done' %}niewykonane
+                                        {% else %}nieuzupełnione{% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

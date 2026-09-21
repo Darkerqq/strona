@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Historia | Planer{% endblock %}
+{% block heading %}Historia{% endblock %}
+{% block content %}
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">Pełny zapis</p><h2>Historia realizacji</h2></div><div class="history-summary"><strong>{{ history | length }}</strong><span>dni z aktywnością</span></div></div>{% if history %}<div class="history-table"><div class="history-row history-head"><span>Data</span><span>Zadanie</span><span>Status</span></div>{% for day, records in history.items() %}{% for task_id, status in records.items() %}{% for task in all_tasks if task.id|string == task_id|string %}<div class="history-row"><span>{{ day }}</span><strong>{{ task.title }}</strong><span class="status-pill {{ status }}">{% if status == 'completed' %}Wykonane{% elif status == 'failed' %}Niewykonane{% else %}Nieuzupełnione{% endif %}</span></div>{% endfor %}{% endfor %}{% endfor %}</div>{% else %}<div class="empty-state"><span>↗</span><p>Historia jest jeszcze pusta. Każde wykonane zadanie pojawi się tutaj.</p></div>{% endif %}</section>
+{% endblock %}

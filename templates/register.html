@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rejestracja | Planer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <a class="auth-brand" href="{{ url_for('login') }}"><span class="brand-mark">✓</span> Planer<span class="brand-dot">.</span></a>
+        <p class="eyebrow">Prywatny planer</p>
+        <h1>Utwórz konto</h1>
+        <p class="auth-subtitle">Twoje zadania i notatki będą widoczne tylko dla Ciebie.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}<div class="flash-message {{ category }}">{{ message }}</div>{% endfor %}
+        {% endwith %}
+        <form method="POST" class="auth-form">
+            <label>Login<input type="text" name="username" minlength="3" maxlength="40" autocomplete="username" required autofocus></label>
+            <label>Hasło<input type="password" name="password" minlength="8" autocomplete="new-password" required></label>
+            <label>Powtórz hasło<input type="password" name="password_confirmation" minlength="8" autocomplete="new-password" required></label>
+            <button class="primary-button" type="submit">Utwórz konto <span>→</span></button>
+        </form>
+        <p class="auth-footer">Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
+    </main>
+</body>
+</html>

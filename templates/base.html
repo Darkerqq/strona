@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Planer dnia{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="new-app"
+      data-selected-date="{{ selected_date }}"
+      data-today-date="{{ today_date }}"
+      data-once-task-days='{{ once_task_days | tojson }}'
+      data-week-days='{{ week_days | tojson }}'>
+    <div class="shell">
+        <aside class="app-sidebar">
+            <a class="brand" href="{{ url_for('index') }}">
+                <span class="brand-mark">✓</span>
+                <span>Planer<span class="brand-dot">.</span></span>
+            </a>
+            <p class="sidebar-label">Przestrzeń pracy</p>
+            <nav class="main-nav" aria-label="Główna nawigacja">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"><span>⌂</span> Dashboard</a>
+                <a href="{{ url_for('tasks_page') }}" class="nav-link {% if request.endpoint == 'tasks_page' %}active{% endif %}"><span>□</span> Zadania</a>
+                <a href="{{ url_for('calendar_page') }}" class="nav-link {% if request.endpoint == 'calendar_page' %}active{% endif %}"><span>▦</span> Kalendarz</a>
+                <a href="{{ url_for('notes_page') }}" class="nav-link {% if request.endpoint == 'notes_page' %}active{% endif %}"><span>≡</span> Notatki</a>
+                <a href="{{ url_for('history_page') }}" class="nav-link {% if request.endpoint == 'history_page' %}active{% endif %}"><span>↗</span> Historia</a>
+            </nav>
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                <span>{{ current_user.username }}</span>
+                <form action="{{ url_for('logout') }}" method="POST">
+                    <button class="logout-button" type="submit" title="Wyloguj">↪</button>
+                </form>
+            </div>
+        </aside>
+        <main class="page-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">{{ selected_date }}</p>
+                    <h1>{% block heading %}Dzień dobry{% endblock %}</h1>
+                </div>
+                <a class="today-button" href="{{ url_for('index', date=today_date) }}">Dzisiaj <span>→</span></a>
+            </header>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
