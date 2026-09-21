@@ -49,6 +49,119 @@ Aplikacja webowa Flask do planowania zadan, sledzenia postepow, prowadzenia nota
 
 Projekt zawiera lokalne srodowisko `venv`, ale nie powinno ono byc dodawane do repozytorium. Jest ignorowane przez `.gitignore`.
 
+## Instalacja przez Windows CMD
+
+Ponizsza instrukcja zaklada Windows 10 lub Windows 11 oraz uruchomienie aplikacji z terminala `cmd.exe`.
+
+### 1. Instalacja Pythona z Microsoft Store
+
+1. Otworz aplikacje **Microsoft Store**.
+2. Wyszukaj **Python 3** albo **Python 3.12**.
+3. Wybierz oficjalna aplikacje opublikowana przez **Python Software Foundation**.
+4. Kliknij **Pobierz** lub **Zainstaluj**.
+5. Po instalacji zamknij i ponownie otworz okno CMD.
+
+Sprawdz instalacje:
+
+```cmd
+python --version
+pip --version
+```
+
+Powinny pojawic sie wersje Pythona i pip. Jesli komenda `python` otwiera Microsoft Store albo nie dziala, wylacz aliasy aplikacji:
+
+1. Otworz **Ustawienia systemu Windows**.
+2. Przejdz do **Aplikacje > Zaawansowane ustawienia aplikacji > Aliasy wykonywania aplikacji**.
+3. Wylacz aliasy `python.exe` oraz `python3.exe`.
+4. Zamknij i otworz CMD ponownie.
+
+### 2. Przejscie do katalogu projektu
+
+Uruchom CMD i przejdz do folderu projektu:
+
+```cmd
+cd /d C:\Users\TomaszHeise\Desktop\strona
+```
+
+`/d` pozwala zmienic jednoczesnie dysk i katalog.
+
+### 3. Utworzenie wirtualnego srodowiska
+
+W katalogu projektu wykonaj:
+
+```cmd
+python -m venv venv
+```
+
+Polecenie utworzy folder `venv`, w ktorym beda przechowywane zaleznosci tylko dla tego projektu.
+
+### 4. Aktywacja wirtualnego srodowiska
+
+W CMD aktywuj srodowisko:
+
+```cmd
+venv\Scripts\activate.bat
+```
+
+Po poprawnej aktywacji na poczatku wiersza polecen powinien pojawic sie tekst podobny do:
+
+```text
+(venv) C:\Users\TomaszHeise\Desktop\strona>
+```
+
+Od tej chwili komendy `python` i `pip` odnosza sie do srodowiska projektu.
+
+### 5. Instalacja zaleznosci przez pip
+
+Z aktywnym srodowiskiem wykonaj:
+
+```cmd
+python -m pip install --upgrade pip
+python -m pip install Flask Werkzeug
+```
+
+Uzycie `python -m pip` jest zalecane, bo gwarantuje instalacje pakietow do tego samego Pythona, ktory uruchamia aplikacje.
+
+Sprawdz pakiety:
+
+```cmd
+python -m pip show Flask Werkzeug
+```
+
+### 6. Uruchomienie aplikacji z venv
+
+Wciaz przy aktywnym srodowisku uruchom:
+
+```cmd
+python app.py
+```
+
+W przegladarce otworz:
+
+```text
+http://127.0.0.1:5000
+```
+
+Aby zatrzymac serwer, w oknie CMD nacisnij `Ctrl+C`.
+
+### 7. Kolejne uruchomienia
+
+Po zamknieciu terminala nie trzeba ponownie tworzyc srodowiska ani instalowac pakietow. Wystarczy:
+
+```cmd
+cd /d C:\Users\TomaszHeise\Desktop\strona
+venv\Scripts\activate.bat
+python app.py
+```
+
+### 8. Wyjscie z wirtualnego srodowiska
+
+Po zakonczeniu pracy mozna dezaktywowac srodowisko:
+
+```cmd
+deactivate
+```
+
 ## Uruchomienie
 
 ### Windows PowerShell
