@@ -80,7 +80,7 @@ Powinny pojawic sie wersje Pythona i pip. Jesli komenda `python` otwiera Microso
 Uruchom CMD i przejdz do folderu projektu:
 
 ```cmd
-cd /d C:\Users\TomaszHeise\Desktop\strona
+cd /d C:\Users\Uzytkownik\Desktop\strona
 ```
 
 `/d` pozwala zmienic jednoczesnie dysk i katalog.
@@ -106,7 +106,7 @@ venv\Scripts\activate.bat
 Po poprawnej aktywacji na poczatku wiersza polecen powinien pojawic sie tekst podobny do:
 
 ```text
-(venv) C:\Users\TomaszHeise\Desktop\strona>
+(venv) C:\Users\Uzytkownik\Desktop\strona>
 ```
 
 Od tej chwili komendy `python` i `pip` odnosza sie do srodowiska projektu.
@@ -149,7 +149,7 @@ Aby zatrzymac serwer, w oknie CMD nacisnij `Ctrl+C`.
 Po zamknieciu terminala nie trzeba ponownie tworzyc srodowiska ani instalowac pakietow. Wystarczy:
 
 ```cmd
-cd /d C:\Users\TomaszHeise\Desktop\strona
+cd /d C:\Users\Uzytkownik\Desktop\strona
 venv\Scripts\activate.bat
 python app.py
 ```
