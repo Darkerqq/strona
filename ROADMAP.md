@@ -83,7 +83,7 @@ Dokument porządkuje kroki rozwoju aplikacji od podstawowej konfiguracji do zest
 ## 9. Notatki przypisane do dat
 
 - Dodanie notatek z tytułem, treścią i datą.
-- Udostępnienie edycji, usuwania oraz przypinania notatek.
+- Udostępnienie usuwania i przypinania notatek; endpoint edycji jest zaimplementowany, ale formularz edycji nie otwiera się obecnie z poziomu interfejsu.
 - Pokazywanie przypiętych notatek na dashboardzie i przechodzenie do dnia, którego dotyczą.
 
 ## 10. Historia i statystyki realizacji
@@ -102,7 +102,7 @@ Dokument porządkuje kroki rozwoju aplikacji od podstawowej konfiguracji do zest
 
 - Zbudowanie wspólnego układu stron z nawigacją między dashboardem, zadaniami, kalendarzem, notatkami i historią.
 - Dodanie formularzy logowania i rejestracji oraz komunikatów o błędach.
-- Wykorzystanie JavaScriptu do wykresu, interakcji kalendarza, formularzy i asynchronicznego ładowania przypomnień.
+- Wykorzystanie JavaScriptu do wykresu, interakcji formularzy zadań i asynchronicznego ładowania przypomnień; kalendarz jest renderowany po stronie serwera i obsługiwany przez linki nawigacyjne.
 
 ## 13. Instrukcje utrzymania i uruchomienia
 
